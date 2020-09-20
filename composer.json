@@ -1,0 +1,16 @@
+{
+    "name": "administrator/ocr_qrcode",
+    "authors": [
+        {
+            "name": "Liu Wei",
+            "email": "cqkd6381@163.com"
+        }
+    ],
+    "require": {
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}
