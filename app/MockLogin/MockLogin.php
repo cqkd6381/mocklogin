@@ -3,9 +3,29 @@ namespace App\MockLogin;
 
 class MockLogin
 {
+    /**
+     * 登录账号
+     * @var string
+     */
+    protected $account = 'cqkd6381@163.com';
+    /**
+     * 登录密码
+     * @var string
+     */
+    protected $password = 'cqkd6381@163.com';
+
+    /**
+     * 首页网址
+     * @var string
+     */
 	protected $page = 'https://www.chengmi.cn/';
 
+    /**
+     * 账户详情页网址
+     * @var string
+     */
 	protected $imagePage = 'https://www.chengmi.cn/member/code.aspx';
+
     /**
      * 提交登录的URL
      */
@@ -22,11 +42,13 @@ class MockLogin
 	protected $loginToken;
 
     /**
+     * 共享cookie的curl句柄
      * @var resource
      */
     private $shareSh;
 
     /**
+     * 百度OCR遍历解析后得到的4位验证码
      * @var string
      */
     private $code;
@@ -40,13 +62,11 @@ class MockLogin
         $this->shareSh = curl_share_init();
         curl_share_setopt($this->shareSh, CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE);
 
-        echo "<pre>";
-//        $this->parseBalance();
         $this->getLoginToken($this->page);
 	}
 
     /**
-     * 解析页面，获取登录的Token
+     * 步骤一：解析页面，获取登录的Token
      * @param $page
      * @return mixed
      */
@@ -68,14 +88,13 @@ class MockLogin
         $node = $nodes->item(0);
 
         $this->loginToken = $node->getAttribute('value');
-        var_dump($this->loginToken);
 
-        // 下一步1
+        // 下一步
         $this->parseImage();
     }
 
     /**
-     * 解析并获取4位验证码
+     * 步骤二：解析并获取4位验证码
      * @return string
      */
     public function parseImage()
@@ -107,7 +126,6 @@ class MockLogin
             $data = curl_exec($ch3);
             curl_close($ch3);
 
-            var_dump($data);
             $result = json_decode($data);
             if($result && isset($result->words_result) && count($result->words_result)){
                 $code = $result->words_result[0]->words;
@@ -118,34 +136,43 @@ class MockLogin
                         break;
                     }
                 }
+            }elseif(isset($result->error_code)){
+                if($result->error_code == 17){
+                    echo '提示：今日的百度OCR免费识别次数已达上限，请明日再试！';
+                }else{
+                    echo $result->error_msg;
+                }
+                return false;
             }
         };
         $this->code = $code;
-        var_dump($this->code);
+        echo '<pre>';
+        echo '本次模拟登录百度OCR解析的验证码为：' . $this->code;
+        echo '</pre>';
 
-        // 下一步2
+        // 下一步
         $this->initParam();
     }
 	
 	/**
-	* 初始化请求参数$param
+	* 步骤三：初始化请求参数$param
 	*/
     protected function initParam()
 	{
         $this->param = [
-            'username' => 'cqkd6381@163.com',
-            'userpwd' => md5('cqkd6381@163.com'),
+            'username' => $this->account,
+            'userpwd' => md5($this->password),
             'code' => $this->code,
             'b_type' => 1,
             'token' => $this->loginToken,
         ];
 
-        // 下一步3
+        // 下一步
         $this->login();
 	}
 	
 	/**
-	* 登录
+	* 步骤四：模拟登录
 	*/
     protected function login()
 	{
@@ -168,18 +195,24 @@ class MockLogin
 		curl_close($curl);
 
         if('10000' == substr($data , 0 , 5)){
-            var_dump('登录成功');
+            echo '<pre>';
+            echo '登录情况：登录成功（账号：' . $this->account . ', 密码：' . $this->password . '）';
+            echo '</pre>';
             $this->parseBalance();
         }else{
-            var_dump('登录失败');
+            echo '<pre>';
+            echo '登录情况：本次因账号密码错误或百度OCR识别验证码错误，登录失败，请刷新重试';
+            echo '</pre>';
         }
 	}
 
+    /**
+     * 步骤五：模拟登录成功后，解析页面获取账户余额
+     */
 	protected function parseBalance()
     {
         // 初始化curl
         $ch1 = curl_init('https://www.chengmi.cn/userpanel');
-//        $ch1 = curl_init('https://www.chengmi.cn/');
         curl_setopt($ch1, CURLOPT_SHARE, $this->shareSh);
         curl_setopt($ch1, CURLOPT_RETURNTRANSFER, true); // 执行之后不直接打印出来
         $html = curl_exec($ch1);
@@ -192,6 +225,8 @@ class MockLogin
         $xpath = new \DOMXPath($doc);
         $tbody = $xpath->query('//table/tr/td[@class="hsac"]');
 
-        var_dump(trim($tbody->item(0)->nodeValue));
+        echo '<pre>';
+        echo '账户余额：' . trim($tbody->item(0)->nodeValue);
+        echo '</pre>';
     }
 }
