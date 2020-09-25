@@ -99,7 +99,7 @@ class MockLogin
      */
     public function parseImage()
     {
-        $token = '24.aaf4da724502c25d448cb9211f686419.2592000.1603201298.282335-22712335';
+        $token = '24.800ba3882c1230b64e8e0ebd2ea3ba14.2592000.1603594236.282335-22755253';
         $postUrl = 'https://aip.baidubce.com/rest/2.0/ocr/v1/webimage_loc?access_token=' . $token;
 
         $code = '';
