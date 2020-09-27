@@ -1,5 +1,4 @@
 <?php
-use App\MockLogin\MockLogin;
-require __DIR__.'/vendor/autoload.php';
+require_once "MockLogin/MockLogin.php";
 
-$mockLogin = new MockLogin();
+$mockLogin = new \MockLogin\MockLogin();

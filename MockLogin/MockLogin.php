@@ -1,5 +1,5 @@
 <?php
-namespace App\MockLogin;
+namespace MockLogin;
 
 class MockLogin
 {
